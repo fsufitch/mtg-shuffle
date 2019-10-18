@@ -1,62 +1,89 @@
 import React, { Component } from "react";
 
-import bootstrap from 'mtg-shuffle/styles/bootstrap.scss';
+import * as Scryfall from 'scryfall-sdk';
 
-export class TestContainer extends Component {
-    state = {
-        displayTitle: 'No title input',
-        formTitle: '',
-        error: '',
-    };
+import bootstrap from 'mtg-shuffle/styles/bootstrap.scss';
+import { ScryfallParser } from "mtg-shuffle/resources/ScryfallParser";
+
+interface State {
+    card: Scryfall.Card | null,
+    cardInput: string,
+    error: string,
+}
+
+export class TestContainer extends Component<{}, State> {
+    parser = new ScryfallParser();
+
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            card: null,
+            cardInput: '',
+            error: '',
+        };
+    }
 
     private renderError() {
         if (this.state.error) {
             return (
-                <span className={bootstrap['text-danger']}> Error: {this.state.error} </span>
+                <span className={bootstrap['text-danger']}> {this.state.error} </span>
             );
         }
         return null;
     }
 
+    private renderCard() {
+        if (!this.state.card) {
+            return null;
+        }
+
+        return (
+            <img src={this.state.card!.image_uris!.normal} />
+        )
+    }
+
     render() {
         return (
             <form onSubmit={this.handleSubmit}>
-                <h2>Title: {this.state.displayTitle}</h2>
                 <p>
                     Input:
                     <input type="text" 
-                        placeholder="New title here" 
-                        value={this.state.formTitle} 
+                        placeholder="Card name here" 
+                        value={this.state.cardInput} 
                         onChange={this.handleChange}/>
                     <input type="submit"
                         value="Submit" />
                     {this.renderError()}
                 </p>
+                <p>
+                    {this.renderCard()}
+                </p>
             </form>
         );
     }
 
-    private validateTitle(title: string) {
-        if (/[0-9]/.test(title)) {
-            return 'No numbers allowed';
-        }
-        return '';
-    }
-
     handleChange = (event: React.ChangeEvent<HTMLInputElement>)  => {
         this.setState({
-            formTitle: event.target.value,
-            error: this.validateTitle(event.target.value),
+            cardInput: event.target.value,
         })
 
     }
 
     handleSubmit = (event: React.FormEvent) => {
-        if (this.state.error) {
-            alert("Invalid input!");
-        } else {
-            this.setState({displayTitle: this.state.formTitle});
-        }
+        let input = this.state.cardInput.trim();
+        this.parser.getCards([input])
+            .catch(error => {
+                this.setState({error: `${error}`});
+                return {} as any;
+            })
+            .then(results => {
+                if (input in results) {
+                    this.setState({
+                        card: results[input],
+                        error: '',
+                    });
+                }
+            });
         event.preventDefault();
     }
 }

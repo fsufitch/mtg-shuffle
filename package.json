@@ -10,7 +10,7 @@
     "build:prod": "webpack --mode production",
     "start": "npm run start:dev",
     "start:prod": "webpack-dev-server --open --mode production",
-    "start:dev": "webpack-dev-server --open --mode production"
+    "start:dev": "webpack-dev-server --open --mode development"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "popper.js": "^1.15.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
+    "scryfall-sdk": "^1.5.1",
     "typescript": "^3.6.4"
   },
   "devDependencies": {

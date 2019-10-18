@@ -4,7 +4,7 @@ import bootstrap from 'mtg-shuffle/styles/bootstrap.scss';
 
 import { loremIpsum } from 'lorem-ipsum';
 
-export class LoremIpsum extends Component {
+export class LoremIpsum extends Component {    
     render() {
         return (
             <p className={bootstrap.lead}>
