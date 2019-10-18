@@ -1,0 +1,12 @@
+@import 'bootstrap';
+
+.submit-button {
+    @extend .btn;
+    @extend .btn-primary;
+}
+
+.deck-input-area {
+    @extend .form-control;
+    @extend .text-monospace;
+    height: 10em;
+}

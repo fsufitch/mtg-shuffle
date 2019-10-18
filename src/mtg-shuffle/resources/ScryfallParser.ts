@@ -1,5 +1,8 @@
 import * as Scryfall from 'scryfall-sdk';
 import { ScryfallCache } from './ScryfallCache';
+import { Deck } from './Deck';
+
+const NUM_SEPARATOR = /[xX]?\s+/;
 
 export class ScryfallParser {
     private cache = new ScryfallCache()
@@ -36,6 +39,27 @@ export class ScryfallParser {
         })
         return result;
     }
+
+    async parseDeck(text: string): Promise<Deck> {
+        let queriedCards = text.split('\n')
+            .map(line => line.trim())
+            .filter(line => !!line && !line.startsWith('//'))
+            .map(line => [line, ...line.split(/\s/)])
+            .map(([line, first, ...rest]) => first.match(/[0-9]+/) ? 
+                {line, amount: parseInt(first), cardName: rest.join(' ')} : 
+                {line, amount: 1, cardName: [first, ...rest].join(' ')});
+
+        queriedCards.forEach(({line, cardName, amount}) => {
+            if (amount < 1 || !cardName) {
+                throw new DeckParseError(`Invalid line: ${line}`);
+            }
+        });
+
+        let cards = await this.getCards(queriedCards.map(({cardName}) => cardName));
+
+        return queriedCards.map(({amount, cardName}) => ({amount, card: cards[cardName]}));
+    }
+
 }
 
 interface GetCardsResult {
@@ -44,3 +68,4 @@ interface GetCardsResult {
 }
 
 class CardsNotFoundError extends Error {}
+class DeckParseError extends Error {}
